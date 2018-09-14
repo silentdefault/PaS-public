@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="google" content="notranslate">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Pin-a-Song</title>
+    <meta name='description' content='Pin-a-Song on GPS location.'>
+    <link rel='canonical' href='https://pin-a-song.tk/'>
+    <link rel='manifest' href='/manifest.json'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <meta name='application-name' content='Pin-a-Song'>
+    <meta name='apple-mobile-web-app-status-bar-style' content='black'>
+    <meta name='apple-mobile-web-app-title' content='Pin-a-Song'>
+    <link rel='icon' sizes='192x192' href='https://pin-a-song.tk/images/192.png'>
+    <link rel='apple-touch-icon' href='https://pin-a-song.tk/images/192.png'>
+    <meta name='msapplication-TileImage' content='https://pin-a-song.tk/images/144.png'>
+    <meta name='msapplication-TileColor' content='#81b71a'>
+    <meta name='theme-color' content='#81b71a'>
+    <meta property='og:title' content='Pin-a-Song'>
+    <meta property='og:type' content='website'>
+    <meta property='og:image' content='https://pin-a-song.tk/images/512.png'>
+    <meta property='og:url' content='https://pin-a-song.tk/'>
+    <meta property='og:description' content='Pin-a-Song on GPS location.'>
+    <meta name='twitter:card' content='summary'>
+    <meta name='twitter:url' content='https://pin-a-song.tk/'>
+    <meta name='twitter:title' content='Pin-a-Song'>
+    <meta name='twitter:description' content='Pin-a-Song on GPS location.'>
+    <meta name='twitter:image' content='https://pin-a-song.tk/images/512.png'>
+    <meta name='twitter:creator' content='@SilentDefault'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Cookies.js/1.2.1/cookies.min.js"></script>
+    <style>
+        html {
+            background-color: #81b71b;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Pin-a-Song</h1>
+    <div>
+        Es una PWA que te permite dejar canciones en tu posición gps, y encontrar las que estan a tu alrededor.
+    </div>
+    <h2>¿Cómo funciona?</h2>
+    <div>
+        Vincula tu cuenta de Spotify Premium, para que la PWA sepa que cancion escuchas. Y con los permisos de GPS de tu dispositivo
+        movil, podemos obtener las canciones que fueron dejadas cerca de ti, ademas de guardar la posición de las canciones
+        que tu fijes.
+    </div>
+    <button access>Accede con Spotify</button>
+</body>
+<script>
+    if (Cookies.get('key')) {
+        window.location.href = "/app";
+    }
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js', { scope: '/' })
+            .then(function (registration) {
+                console.log('Service Worker Registered');
+            });
+
+        navigator.serviceWorker.ready.then(function (registration) {
+            console.log('Service Worker Ready');
+        });
+    }
+    $('button[access]').click(function () {
+        window.location.href = "/app";
+    });
+</script>
+
+</html>

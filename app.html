@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="google" content="notranslate">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Pin-a-Song</title>
+    <meta name='description' content='Pin-a-Song on GPS location.'>
+    <link rel='canonical' href='https://pin-a-song.tk/'>
+    <link rel="manifest" href="https://pin-a-song.tk/manifest.json">
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <meta name='application-name' content='Pin-a-Song'>
+    <meta name='apple-mobile-web-app-status-bar-style' content='black'>
+    <meta name='apple-mobile-web-app-title' content='Pin-a-Song'>
+    <link rel='icon' sizes='192x192' href='https://pin-a-song.tk/images/192.png'>
+    <link rel='apple-touch-icon' href='https://pin-a-song.tk/images/192.png'>
+    <meta name='msapplication-TileImage' content='https://pin-a-song.tk/images/144.png'>
+    <meta name='msapplication-TileColor' content='#81b71a'>
+    <meta name='theme-color' content='#81b71a'>
+    <meta property='og:title' content='Pin-a-Song'>
+    <meta property='og:type' content='website'>
+    <meta property='og:image' content='https://pin-a-song.tk/images/192.png'>
+    <meta property='og:url' content='https://pin-a-song.tk/'>
+    <meta property='og:description' content='Pin-a-Song on GPS location.'>
+    <meta name='twitter:card' content='summary'>
+    <meta name='twitter:url' content='https://pin-a-song.tk/'>
+    <meta name='twitter:title' content='Pin-a-Song'>
+    <meta name='twitter:description' content='Pin-a-Song on GPS location.'>
+    <meta name='twitter:image' content='./images/192.png'>
+    <meta name='twitter:creator' content='@SilentDefault'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Cookies.js/1.2.1/cookies.min.js"></script>
+    <style>
+        .btn-container {
+            position: absolute;
+            bottom: 10px;
+            z-index: 0;
+        }
+
+        body {
+            background-color: #81b71a;
+        }
+
+        [nearby] {
+            display: inline-block;
+            overflow: scroll;
+        }
+
+        [album] {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 150px;
+            height: 150px;
+            background-size: cover;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="PaS">
+        <strong>Escuchas:</strong>
+        <div player>
+            <div song v-model="player.name">--none--</div>
+            <div artist v-model="player.artist"></div>
+            <div album></div>
+        </div>
+        <div post>
+            <button type="submit" @click="post" :disabled="player.name == '--none--'">Fijar!</button>
+        </div>
+        <div nearby>
+            <strong>Cercanas:</strong>
+            <li v-for="n in nearby">
+                <label v-on:click="play(n.id)">{{ n.name }} :: {{n.artist}}</label>
+            </li>
+            <label v-if="!nearby.length"><br>--empty--</label>
+        </div>
+    </div>
+</body>
+<script>
+    var gps = {
+        lat: 0,
+        lon: 0
+    }
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(showPosition);
+    } else {
+        alert("tu dispositivo no soporta la geolocalizacion mediante navegador web");
+    }
+    function showPosition(position) {
+        gps = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+        };
+        $.ajax({
+            method: "GET",
+            url: "./player",
+        })
+            .done(function (msg) {
+                PaS.player = msg.player;
+                $('div[artist]').text(msg.player.artist);
+                $('div[song]').text(msg.player.name);
+                $('div[album]').css("background-image", `url(${PaS.player.image})`);
+            });
+        $.ajax({
+            method: "POST",
+            url: "./nearby",
+            data: gps
+        })
+            .done(function (msg) {
+                PaS.nearby = msg;
+            });
+    }
+    var PaS = new Vue({
+        el: '#PaS',
+        data: {
+            player: {
+                id: '',
+                artist: '',
+                name: '--none--'
+            },
+            nearby: []
+        }, methods: {
+            update: function () {
+
+            },
+            post: function () {
+                $.ajax({
+                    method: "POST",
+                    url: "./post",
+                    data: { gps: gps, song: PaS.player.id },
+                    beforeSend: function (xhr) {
+                        window.navigator.vibrate(100);
+                        $('button').attr('disabled', '');
+                        setTimeout(function () {
+                            $('button').removeAttr('disabled');
+                        }, 5000);
+                    }
+                })
+                    .done(function (msg) {
+                        console.log(msg);
+                    });
+            }
+        }
+    });
+    $('[nearby]').height($(window).height() - ($('[nearby]')[0].offsetTop + 80));
+    function play(id) {
+        $.ajax({
+            method: "POST",
+            url: "./play",
+            data: { track: id },
+            beforeSend: function (xhr) {
+                window.navigator.vibrate(100);
+            }
+        })
+            .done(function (msg) {
+                console.log(msg);
+            });
+    }
+    Cookies.set('key', 'value');
+</script>
+<script type='text/javascript' src='https://ko-fi.com/widgets/widget_2.js'></script>
+<script type='text/javascript'>kofiwidget2.init('Apoyame en Ko-fi', '#9bd5ff', 'silentdefault'); kofiwidget2.draw();</script>
+
+</html>
